@@ -1,14 +1,15 @@
-# TempestD_python_read_example.py
-# Michael Cheeseman
-# 06/29/2022
+# TEMPEST-D_Plotting.py
+# 07/11/2022
+# Madison Lytle
 #
-# Got information on Tempest H5 files here: (https://tempest.colostate.edu/TEMPEST-D_Level_1_Data_Description_05sep19.pdf)
-# Additional information on satellite mission here at these links:
-# (https://directory.eoportal.org/web/eoportal/satellite-missions/t/tempest-d)
-# (https://digitalcommons.usu.edu/cgi/viewcontent.cgi?referer=&httpsredir=1&article=3609&context=smallsat)
-# (https://www.jpl.nasa.gov/news/an-inside-look-at-hurricane-dorian-from-a-mini-satellite)
+# Made referenceing: TempestD_python_read_example.py by Michael Cheeseman
 #
-# File description:
+# Link to data files: (https://tempest.colostate.edu/TEMPEST-D_Level_1_Data_Description_05sep19.pdf)
+#
+# NOTES:
+# CH1=181GHz,CH2=178GHz,CH3=174GHz,CH4=164GHz,CH5=87GHz
+#
+# Michael's Description:
 # The TEMPEST‐D data are calibrated, geolocated and output into an HDF5 file once per day. The data are
 # stored in a structure called scan. The “scan” structure indicates that the data are organized in a 2‐D
 # array where each row is a complete scan. The 2‐D variables are stored as Nscan x Nbeam, where Nscan
@@ -19,8 +20,12 @@
 # each stored as 1‐D arrays of length Nscan.
 # ------------------------------------------------------------------------------------------------
 # Params
-save_figs = 0;
-out_fp = './figures_TempestD/' #Output Directories
+save_figs = 1
+all_channels = 1
+show_figs = 0
+data_file = 'TEMPEST_L1_pub_20190802T163128_20190802T235920_v2.0.h5'
+data_dir = '/home/madison/Python/NOAA_Lapenta_Research/TEMPEST_Data/h5_data_files/' + data_file
+out_fp = '/home/madison/Python/NOAA_Lapenta_Research/TEMPEST_Data/TEMPEST-D_figs/' # Prefered output dir
 
 # ---------------------------------------
 # Get Libs
@@ -30,12 +35,14 @@ import pylab as pl
 import h5py
 from netCDF4 import num2date
 import datetime as dt
+from cartopy import config
+import cartopy.crs as ccrs
 plt.close('all')
 
 # ---------------------------------------
+## Get Data
 # Open Tempest L1 data
-f = h5py.File('/home/madison/Python/NOAA_Lapenta_Research/TEMPEST_Data/TEMPEST_L1_pub_20190802T163128_20190802T235920_v2.0.h5','r')
-#print(list(f.keys()))
+f = h5py.File(data_dir,'r')
 scan_dat = f.get('scan') # data is in structure called "scan"
 # Print the contents of file
 for fkey in scan_dat.keys():
@@ -65,13 +72,18 @@ f.close()
 tb[np.isnan(tb)==True] = -999
 tb = np.ma.masked_values(tb,tb.min())
 
-##########################################################################################
+## Plotting
+print('')
+print('------------------------------')
+print('Now plotting...')
 # ---------------------------------------
 # Plot scan of data from TEMPEST-D with boresight
-from cartopy import config
-import cartopy.crs as ccrs
-#for i in range(5):
-for i in range(1):
+if all_channels:
+    chans = 5
+else:
+    chans = 1
+
+for i in range(chans):
     # Plot using CARTOPY
     pl.figure(figsize=(5,4))
     x,y = blon.ravel(),blat.ravel()
@@ -83,9 +95,10 @@ for i in range(1):
                  transform=ccrs.PlateCarree())
     cbar=pl.colorbar(sc,orientation='horizontal',shrink=0.9)
     cbar.set_label(label='Brightness Temp (K)',fontsize=12)
-    outname = 'TempestD-%i-scan-TB'%chans[i]
     pl.tight_layout()
-    #pl.savefig(out_fp+outname,bbox_to_inches='tight')
+    if save_figs:
+        outname = 'TempestD-%i-scan-TB'%chans[i]
+        pl.savefig(out_fp+outname+'.png')
 
 # ---------------------------------------
 # Plot histograms of data from various radiometers
@@ -99,7 +112,9 @@ for i in range(test_dat.shape[0]):
 pl.legend()
 pl.xlabel('Brightness Temperature (K)',fontsize=12)
 pl.tight_layout()
-outname='TempestD_radiometer_Tb_distributions'
-#pl.savefig(out_fp+outname,bbox_to_inches='tight')
-pl.show()
+if save_figs:
+    outname='TempestD_radiometer_Tb_distributions'
+    pl.savefig(out_fp+outname+'.png')
+if show_figs:
+    pl.show()
 

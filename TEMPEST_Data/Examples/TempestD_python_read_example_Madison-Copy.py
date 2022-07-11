@@ -18,12 +18,9 @@
 # dimension corresponds to the 5 radiometer channels. The spacecraft position and attitude data are
 # each stored as 1‐D arrays of length Nscan.
 # ------------------------------------------------------------------------------------------------
-# Params
-save_figs = 0;
-out_fp = './figures_TempestD/' #Output Directories
 
 # ---------------------------------------
-# Get Libs
+# Uploads
 import numpy as np
 import matplotlib.pyplot as plt
 import pylab as pl
@@ -31,6 +28,10 @@ import h5py
 from netCDF4 import num2date
 import datetime as dt
 plt.close('all')
+
+# ---------------------------------------
+# Input/Output Directories and User Variables
+out_fp = './figures_TempestD/'
 
 # ---------------------------------------
 # Open Tempest L1 data
@@ -68,6 +69,8 @@ tb = np.ma.masked_values(tb,tb.min())
 ##########################################################################################
 # ---------------------------------------
 # Plot scan of data from TEMPEST-D with boresight
+#from mpl_toolkits.basemap import Basemap
+#from mpl_toolkits.basemap import shiftgrid
 from cartopy import config
 import cartopy.crs as ccrs
 #for i in range(5):
@@ -86,6 +89,7 @@ for i in range(1):
     outname = 'TempestD-%i-scan-TB'%chans[i]
     pl.tight_layout()
     #pl.savefig(out_fp+outname,bbox_to_inches='tight')
+    #pl.close('all')
 
 # ---------------------------------------
 # Plot histograms of data from various radiometers
@@ -101,5 +105,6 @@ pl.xlabel('Brightness Temperature (K)',fontsize=12)
 pl.tight_layout()
 outname='TempestD_radiometer_Tb_distributions'
 #pl.savefig(out_fp+outname,bbox_to_inches='tight')
+#pl.close('all')
 pl.show()
 
